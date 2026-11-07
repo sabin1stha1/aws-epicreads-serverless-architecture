@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact Submissions</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 24px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
+    th { background: #f5f5f5; text-align: left; }
+    .controls { margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <h1>Contact Submissions</h1>
+  <div class="controls">
+    <span id="count"></span>
+    <button id="loadMore" style="display:none;">Load more</button>
+  </div>
+  <table>
+    <thead>
+      <tr><th>Time</th><th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>ID</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+ 
+  <script>
+
+// ADD your API here
+    const URL = "https://<YOUR-API>.execute-api.us-east-1.amazonaws.com/dev/epicreads_resource";
+
+    let lastKey = null, total = 0;
+ 
+    async function fetchPage() {
+      const url = new URL(API);
+      url.searchParams.set("limit", "25");
+      if (lastKey) url.searchParams.set("lastKey", lastKey);
+ 
+      const res = await fetch(url);
+      const data = await res.json();
+ 
+      data.items.forEach(addRow);
+      total += data.items.length;
+      document.getElementById('count').textContent = `Loaded: ${total}`;
+ 
+      lastKey = data.lastKey;
+      document.getElementById('loadMore').style.display = lastKey ? 'inline-block' : 'none';
+    }
+ 
+    function addRow(i) {
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        `<td>${i.createdAt || ""}</td>
+         <td>${i.name || ""}</td>
+         <td>${i.email || ""}</td>
+         <td>${i.phone || ""}</td>
+         <td>${(i.message || "").replace(/</g,"&lt;")}</td>
+         <td>${i.id}</td>`;
+      document.getElementById('rows').appendChild(tr);
+    }
+ 
+    document.getElementById('loadMore').onclick = fetchPage;
+    fetchPage();
+  </script>
+</body>
+</html>
